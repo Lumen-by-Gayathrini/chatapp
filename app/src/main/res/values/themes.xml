@@ -1,0 +1,5 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Window theme for the single Compose Activity. Colours/typography are owned by
+         the Compose ChatAppTheme; this only needs to be a no-action-bar DayNight theme. -->
+    <style name="Theme.ChatApp" parent="Theme.Material3.DayNight.NoActionBar" />
+</resources>
