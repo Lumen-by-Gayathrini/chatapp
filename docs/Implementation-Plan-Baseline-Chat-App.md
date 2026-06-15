@@ -8,6 +8,15 @@ An ordered, executable build sequence for the baseline (control) chat app. Each 
 **self-contained, build-green increment** with explicit acceptance criteria and verification.
 This document is a checklist — tick items as you go.
 
+> **⚠️ Design revision (2026-06-07) — supersedes the elderly-UX framing below.** The baseline
+> (control) UI is now a **conventional WhatsApp-style chat app**, *not* an elderly-optimized one.
+> **Rationale:** the control must be a *normal* app so that the experimental build's Lumen middleware
+> produces a *measurable* elderly-assistance benefit; pre-optimizing the baseline for elderly users
+> would confound/mask that effect. Accordingly, Phase 7 (Elderly UX) and the §8.4/§8.5/§10 elderly
+> requirements are **deferred to the experimental Lumen build**. The control keeps ordinary good
+> practice (TalkBack content descriptions, sensible contrast) but uses a standard type scale, the
+> WhatsApp green palette, chat bubbles with tick receipts, etc.
+
 ---
 
 ## 1. How to use this plan

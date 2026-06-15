@@ -9,8 +9,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -26,9 +28,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -62,6 +66,8 @@ fun ProfileRoute(
         state = state,
         onBack = onBack,
         onDisplayNameChange = viewModel::onDisplayNameChange,
+        onAboutChange = viewModel::onAboutChange,
+        onToggleLastSeen = viewModel::onToggleLastSeen,
         onSave = viewModel::save,
         onAvatarPicked = viewModel::onAvatarPicked,
         onDismissError = viewModel::dismissError,
@@ -77,6 +83,8 @@ fun ProfileScreen(
     state: ProfileUiState,
     onBack: () -> Unit,
     onDisplayNameChange: (String) -> Unit,
+    onAboutChange: (String) -> Unit,
+    onToggleLastSeen: (Boolean) -> Unit,
     onSave: () -> Unit,
     onAvatarPicked: (Uri) -> Unit,
     onDismissError: () -> Unit,
@@ -99,6 +107,11 @@ fun ProfileScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                ),
             )
         },
     ) { innerPadding ->
@@ -126,7 +139,11 @@ fun ProfileScreen(
                 onClick = { pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
             )
             Spacer(Modifier.height(8.dp))
-            Text(text = "Tap the photo to change it", style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = "Tap the photo to change it",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
 
             Spacer(Modifier.height(24.dp))
             LabeledTextField(
@@ -137,9 +154,32 @@ fun ProfileScreen(
             Spacer(Modifier.height(8.dp))
             Text(
                 text = "@${state.username}",
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+
+            Spacer(Modifier.height(16.dp))
+            LabeledTextField(
+                value = state.about,
+                onValueChange = onAboutChange,
+                label = "Status / About",
+            )
+
+            Spacer(Modifier.height(16.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(text = "Last seen & online", style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        text = "When off, you won't see others' last seen or online either.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(checked = state.showLastSeen, onCheckedChange = onToggleLastSeen)
+            }
 
             Spacer(Modifier.height(24.dp))
             PrimaryButton(
@@ -151,7 +191,7 @@ fun ProfileScreen(
                 Spacer(Modifier.height(8.dp))
                 Text(
                     text = "Saved",
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
@@ -183,8 +223,8 @@ private fun ProfileAvatar(
 ) {
     Surface(
         shape = CircleShape,
-        color = MaterialTheme.colorScheme.primaryContainer,
-        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier
             .size(120.dp)
             .clickable(onClick = onClick),

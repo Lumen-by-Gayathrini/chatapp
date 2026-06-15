@@ -28,6 +28,7 @@ import com.gayathrini.chatapp.core.designsystem.component.PrimaryButton
 @Composable
 fun LoginRoute(
     onNavigateToRegister: () -> Unit,
+    onForgotPassword: () -> Unit,
     onLoggedIn: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel(),
 ) {
@@ -46,6 +47,7 @@ fun LoginRoute(
         onTogglePassword = viewModel::togglePasswordVisibility,
         onSubmit = viewModel::submit,
         onNavigateToRegister = onNavigateToRegister,
+        onForgotPassword = onForgotPassword,
     )
 }
 
@@ -57,6 +59,7 @@ fun LoginScreen(
     onTogglePassword: () -> Unit,
     onSubmit: () -> Unit,
     onNavigateToRegister: () -> Unit,
+    onForgotPassword: () -> Unit,
 ) {
     Scaffold { innerPadding ->
         Column(
@@ -69,13 +72,15 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                text = "Chat App",
+                text = "ChatApp",
                 style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary,
             )
             Spacer(Modifier.height(8.dp))
             Text(
                 text = "Log in to start chatting",
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(32.dp))
 
@@ -115,6 +120,9 @@ fun LoginScreen(
             )
 
             Spacer(Modifier.height(8.dp))
+            TextButton(onClick = onForgotPassword) {
+                Text("Forgot password?")
+            }
             TextButton(onClick = onNavigateToRegister) {
                 Text("Create a new account")
             }

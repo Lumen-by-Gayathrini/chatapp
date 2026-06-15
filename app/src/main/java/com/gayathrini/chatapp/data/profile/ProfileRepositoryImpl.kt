@@ -24,9 +24,14 @@ class ProfileRepositoryImpl @Inject constructor(
     override suspend fun load(): AppResult<User> =
         safeApiCall(dispatchers, json) { api.getMe().toUser() }
 
-    override suspend fun updateDisplayName(displayName: String): AppResult<User> =
+    override suspend fun updateProfile(displayName: String, about: String): AppResult<User> =
         safeApiCall(dispatchers, json) {
-            api.updateMe(UpdateProfileRequest(displayName = displayName)).toUser()
+            api.updateMe(UpdateProfileRequest(displayName = displayName, about = about)).toUser()
+        }
+
+    override suspend fun setShowLastSeen(enabled: Boolean): AppResult<User> =
+        safeApiCall(dispatchers, json) {
+            api.updateMe(UpdateProfileRequest(showLastSeen = enabled)).toUser()
         }
 
     override suspend fun updateAvatar(payload: MediaPayload): AppResult<User> =

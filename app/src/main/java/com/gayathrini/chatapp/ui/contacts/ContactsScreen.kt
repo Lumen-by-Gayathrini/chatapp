@@ -29,6 +29,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -50,6 +51,7 @@ fun ContactsRoute(
     modifier: Modifier = Modifier,
     pickerMode: Boolean = false,
     onContactSelected: (peerUserId: String) -> Unit = {},
+    onOpenProfile: (userId: String) -> Unit = {},
     viewModel: ContactsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -67,6 +69,7 @@ fun ContactsRoute(
         onBack = onBack,
         onQueryChange = viewModel::onQueryChange,
         onContactClick = viewModel::onContactClick,
+        onOpenProfile = onOpenProfile,
         onRequestRemove = viewModel::requestRemove,
         onConfirmRemove = viewModel::confirmRemove,
         onCancelRemove = viewModel::cancelRemove,
@@ -86,6 +89,7 @@ fun ContactsScreen(
     onBack: () -> Unit,
     onQueryChange: (String) -> Unit,
     onContactClick: (Contact) -> Unit,
+    onOpenProfile: (userId: String) -> Unit,
     onRequestRemove: (Contact) -> Unit,
     onConfirmRemove: () -> Unit,
     onCancelRemove: () -> Unit,
@@ -106,6 +110,11 @@ fun ContactsScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                ),
             )
         },
         floatingActionButton = {
@@ -149,7 +158,7 @@ fun ContactsScreen(
                             onClick = if (pickerMode) {
                                 { onContactClick(contact) }
                             } else {
-                                null
+                                { onOpenProfile(contact.user.id) }
                             },
                             onRemove = { onRequestRemove(contact) },
                         )
@@ -229,8 +238,8 @@ private fun ContactRow(
 private fun Avatar(name: String) {
     Surface(
         shape = CircleShape,
-        color = MaterialTheme.colorScheme.primaryContainer,
-        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.size(48.dp),
     ) {
         Box(contentAlignment = Alignment.Center) {

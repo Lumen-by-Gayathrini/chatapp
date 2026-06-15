@@ -28,12 +28,10 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.gayathrini.chatapp.core.designsystem.theme.ChatTheme
 
-// Reusable, elderly-friendly building blocks (TDD §8.4/§8.6): large touch targets (≥48 dp,
-// primary actions ≥56 dp), comfortable text, explicit Loading / Empty / Error states.
-
-private val MinTarget = 48.dp
-private val PrimaryHeight = 56.dp
+// Reusable building blocks for the standard chat UI (control build): conventional sizing and the
+// usual Loading / Empty / Error states.
 
 @Composable
 fun PrimaryButton(
@@ -45,9 +43,7 @@ fun PrimaryButton(
     Button(
         onClick = onClick,
         enabled = enabled,
-        modifier = modifier
-            .fillMaxWidth()
-            .heightIn(min = PrimaryHeight),
+        modifier = modifier.fillMaxWidth(),
     ) {
         Text(text = text, style = MaterialTheme.typography.labelLarge)
     }
@@ -71,15 +67,13 @@ fun LabeledTextField(
             singleLine = true,
             isError = error != null,
             visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = MinTarget),
+            modifier = Modifier.fillMaxWidth(),
         )
         if (error != null) {
             Text(
                 text = error,
                 color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(top = 4.dp, start = 4.dp),
             )
         }
@@ -105,12 +99,12 @@ fun ErrorBanner(
         ) {
             Text(
                 text = message,
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.weight(1f),
             )
             if (actionLabel != null && onAction != null) {
                 Spacer(Modifier.width(8.dp))
-                TextButton(onClick = onAction, modifier = Modifier.heightIn(min = MinTarget)) {
+                TextButton(onClick = onAction) {
                     Text(actionLabel)
                 }
             }
@@ -142,7 +136,8 @@ fun EmptyState(
             Spacer(Modifier.heightIn(min = 8.dp))
             Text(
                 text = description,
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(top = 8.dp),
             )
@@ -176,20 +171,23 @@ fun MessageBubble(
 ) {
     val alignment = if (isOutgoing) Alignment.CenterEnd else Alignment.CenterStart
     val bubbleColor =
-        if (isOutgoing) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
-    val contentColor =
-        if (isOutgoing) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
-    Box(modifier = modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)) {
+        if (isOutgoing) ChatTheme.colors.outgoingBubble else ChatTheme.colors.incomingBubble
+    // WhatsApp-style bubble: small radius with one squared corner toward the sender.
+    val shape =
+        if (isOutgoing) RoundedCornerShape(8.dp, 2.dp, 8.dp, 8.dp)
+        else RoundedCornerShape(2.dp, 8.dp, 8.dp, 8.dp)
+    Box(modifier = modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp)) {
         Surface(
             color = bubbleColor,
-            contentColor = contentColor,
-            shape = RoundedCornerShape(16.dp),
-            modifier = Modifier.align(alignment).sizeIn(maxWidth = 300.dp),
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            shape = shape,
+            shadowElevation = 1.dp,
+            modifier = Modifier.align(alignment).sizeIn(maxWidth = 280.dp),
         ) {
             Text(
                 text = text,
                 style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(PaddingValues(horizontal = 16.dp, vertical = 10.dp)),
+                modifier = Modifier.padding(PaddingValues(horizontal = 10.dp, vertical = 6.dp)),
             )
         }
     }

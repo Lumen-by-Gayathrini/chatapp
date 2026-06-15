@@ -55,16 +55,31 @@ class ProfileViewModelTest {
     }
 
     @Test
-    fun save_success_setsConfirmation() {
-        coEvery { profileRepository.updateDisplayName("Mary B") } returns
-            AppResult.Success(User("u1", "mary", "Mary B"))
+    fun save_success_persistsNameAndAbout_andSetsConfirmation() {
+        coEvery { profileRepository.updateProfile("Mary B", "Hi there") } returns
+            AppResult.Success(User("u1", "mary", "Mary B", about = "Hi there"))
         val vm = viewModel()
 
         vm.onDisplayNameChange("Mary B")
+        vm.onAboutChange("Hi there")
         vm.save()
 
         assertEquals("Mary B", vm.state.value.displayName)
+        assertEquals("Hi there", vm.state.value.about)
         assertTrue(vm.state.value.savedConfirmation)
+        coVerify { profileRepository.updateProfile("Mary B", "Hi there") }
+    }
+
+    @Test
+    fun onToggleLastSeen_persistsSetting() {
+        coEvery { profileRepository.setShowLastSeen(false) } returns
+            AppResult.Success(User("u1", "mary", "Mary", showLastSeen = false))
+        val vm = viewModel()
+
+        vm.onToggleLastSeen(false)
+
+        assertEquals(false, vm.state.value.showLastSeen)
+        coVerify { profileRepository.setShowLastSeen(false) }
     }
 
     @Test

@@ -14,7 +14,7 @@ import com.gayathrini.chatapp.data.messages.MessageEntity
  */
 @Database(
     entities = [ContactEntity::class, ConversationEntity::class, MessageEntity::class],
-    version = 3,
+    version = 17,
     exportSchema = false,
 )
 abstract class ChatDatabase : RoomDatabase() {

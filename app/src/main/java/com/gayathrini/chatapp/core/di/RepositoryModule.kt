@@ -12,8 +12,14 @@ import com.gayathrini.chatapp.data.media.MediaRepository
 import com.gayathrini.chatapp.data.media.MediaRepositoryImpl
 import com.gayathrini.chatapp.data.messages.MessageRepository
 import com.gayathrini.chatapp.data.messages.MessageRepositoryImpl
+import com.gayathrini.chatapp.data.presence.PresenceRepository
+import com.gayathrini.chatapp.data.presence.PresenceRepositoryImpl
 import com.gayathrini.chatapp.data.profile.ProfileRepository
 import com.gayathrini.chatapp.data.profile.ProfileRepositoryImpl
+import com.gayathrini.chatapp.data.search.SearchRepository
+import com.gayathrini.chatapp.data.search.SearchRepositoryImpl
+import com.gayathrini.chatapp.data.user.UserRepository
+import com.gayathrini.chatapp.data.user.UserRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -51,4 +57,16 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindProfileRepository(impl: ProfileRepositoryImpl): ProfileRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindUserRepository(impl: UserRepositoryImpl): UserRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindPresenceRepository(impl: PresenceRepositoryImpl): PresenceRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSearchRepository(impl: SearchRepositoryImpl): SearchRepository
 }

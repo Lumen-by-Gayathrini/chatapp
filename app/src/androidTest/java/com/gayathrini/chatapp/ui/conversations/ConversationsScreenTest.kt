@@ -35,7 +35,9 @@ class ConversationsScreenTest {
 
     private fun setScreen(
         state: ConversationsUiState,
-        onConversationLongClick: (Conversation) -> Unit = {},
+        onMuteConversation: (Conversation) -> Unit = {},
+        onPinConversation: (Conversation) -> Unit = {},
+        onDeleteConversation: (Conversation) -> Unit = {},
         onConfirmDelete: () -> Unit = {},
     ) {
         composeRule.setContent {
@@ -43,27 +45,63 @@ class ConversationsScreenTest {
                 ConversationsScreen(
                     state = state,
                     onConversationClick = {},
-                    onConversationLongClick = onConversationLongClick,
+                    onMuteConversation = onMuteConversation,
+                    onUnmuteConversation = {},
+                    onPinConversation = onPinConversation,
+                    onUnpinConversation = {},
+                    onArchiveConversation = {},
+                    onDeleteConversation = onDeleteConversation,
                     onNewChat = {},
+                    onNewGroup = {},
                     onOpenContacts = {},
                     onOpenProfile = {},
+                    onOpenSearch = {},
+                    onOpenArchived = {},
+                    onOpenStarred = {},
                     onRetry = {},
                     onConfirmDelete = onConfirmDelete,
                     onCancelDelete = {},
+                    onConfirmMute = {},
+                    onCancelMute = {},
                 )
             }
         }
     }
 
     @Test
-    fun task3_longPressConversation_requestsDelete() {
-        var longPressed = false
+    fun task3_longPressConversation_opensMenu_andDeletes() {
+        var deleteRequested = false
         setScreen(
             ConversationsUiState(isLoading = false, conversations = listOf(conversation)),
-            onConversationLongClick = { longPressed = true },
+            onDeleteConversation = { deleteRequested = true },
         )
         composeRule.onNodeWithText("John").performTouchInput { longClick() }
-        assertTrue(longPressed)
+        composeRule.onNodeWithText("Delete").performClick()
+        assertTrue(deleteRequested)
+    }
+
+    @Test
+    fun longPressConversation_muteOption_requestsMute() {
+        var muteRequested = false
+        setScreen(
+            ConversationsUiState(isLoading = false, conversations = listOf(conversation)),
+            onMuteConversation = { muteRequested = true },
+        )
+        composeRule.onNodeWithText("John").performTouchInput { longClick() }
+        composeRule.onNodeWithText("Mute").performClick()
+        assertTrue(muteRequested)
+    }
+
+    @Test
+    fun longPressConversation_pinOption_requestsPin() {
+        var pinRequested = false
+        setScreen(
+            ConversationsUiState(isLoading = false, conversations = listOf(conversation)),
+            onPinConversation = { pinRequested = true },
+        )
+        composeRule.onNodeWithText("John").performTouchInput { longClick() }
+        composeRule.onNodeWithText("Pin").performClick()
+        assertTrue(pinRequested)
     }
 
     @Test

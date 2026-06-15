@@ -41,7 +41,24 @@ class ConversationScreenTest {
                     onBack = {},
                     onDraftChange = {},
                     onSend = onSend,
+                    onSendSticker = {},
                     onPhotoPicked = {},
+                    onFilePicked = {},
+                    onLoadOlder = {},
+                    onReact = { _, _ -> },
+                    onReply = {},
+                    onCancelReply = {},
+                    onEdit = {},
+                    onCancelEdit = {},
+                    onStar = {},
+                    onSetDisappearing = {},
+                    onForward = {},
+                    onForwardTargetPicked = {},
+                    onCancelForward = {},
+                    onDeleteMessage = {},
+                    onDeleteForMe = {},
+                    onDeleteForEveryone = {},
+                    onCancelMessageDelete = {},
                     onRetry = {},
                     onRequestDelete = {},
                     onConfirmDelete = {},
@@ -62,7 +79,8 @@ class ConversationScreenTest {
             ),
         )
         composeRule.onNodeWithText("Hello E2E").assertIsDisplayed()
-        composeRule.onNodeWithText("Sent").assertIsDisplayed()
+        // Delivery status is now a WhatsApp-style tick exposed via content description.
+        composeRule.onNodeWithContentDescription("Sent").assertExists()
     }
 
     @Test

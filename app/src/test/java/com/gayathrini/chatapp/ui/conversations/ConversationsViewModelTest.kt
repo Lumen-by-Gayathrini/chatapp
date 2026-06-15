@@ -42,6 +42,11 @@ class ConversationsViewModelTest {
         coEvery { conversationRepository.refresh() } returns AppResult.Success(Unit)
         coEvery { conversationRepository.sync() } returns AppResult.Success(Unit)
         coEvery { conversationRepository.deleteConversation(any()) } returns AppResult.Success(Unit)
+        coEvery { conversationRepository.mute(any(), any()) } returns AppResult.Success(Unit)
+        coEvery { conversationRepository.unmute(any()) } returns AppResult.Success(Unit)
+        coEvery { conversationRepository.pin(any()) } returns AppResult.Success(Unit)
+        coEvery { conversationRepository.unpin(any()) } returns AppResult.Success(Unit)
+        coEvery { conversationRepository.archive(any()) } returns AppResult.Success(Unit)
     }
 
     @After
@@ -93,6 +98,72 @@ class ConversationsViewModelTest {
         viewModel.confirmDelete()
         coVerify { conversationRepository.deleteConversation("c1") }
         assertNull(viewModel.state.value.pendingDelete)
+    }
+
+    @Test
+    fun confirmMute_timedDuration_callsRepositoryWithFutureInstant() {
+        val target = conversation("c1", "John")
+        val viewModel = ConversationsViewModel(conversationRepository)
+
+        viewModel.requestMute(target)
+        assertEquals(target, viewModel.state.value.mutePickerFor)
+
+        viewModel.confirmMute(MuteDuration.EIGHT_HOURS)
+        coVerify { conversationRepository.mute(eq("c1"), match { it != null && it.isAfter(java.time.Instant.now()) }) }
+        assertNull(viewModel.state.value.mutePickerFor)
+    }
+
+    @Test
+    fun confirmMute_always_callsRepositoryWithNullUntil() {
+        val viewModel = ConversationsViewModel(conversationRepository)
+
+        viewModel.requestMute(conversation("c1", "John"))
+        viewModel.confirmMute(MuteDuration.ALWAYS)
+
+        coVerify { conversationRepository.mute("c1", null) }
+    }
+
+    @Test
+    fun unmute_callsRepository() {
+        val viewModel = ConversationsViewModel(conversationRepository)
+
+        viewModel.unmute(conversation("c1", "John"))
+
+        coVerify { conversationRepository.unmute("c1") }
+    }
+
+    @Test
+    fun pin_callsRepository() {
+        val viewModel = ConversationsViewModel(conversationRepository)
+
+        viewModel.pin(conversation("c1", "John"))
+
+        coVerify { conversationRepository.pin("c1") }
+    }
+
+    @Test
+    fun archive_callsRepository() {
+        val viewModel = ConversationsViewModel(conversationRepository)
+
+        viewModel.archive(conversation("c1", "John"))
+
+        coVerify { conversationRepository.archive("c1") }
+    }
+
+    @Test
+    fun conversations_sortPinnedFirst_evenWhenOlder() {
+        val now = java.time.Instant.now()
+        val pinned = conversation("c_pin", "John").copy(
+            lastMessageAt = now.minusSeconds(1000),
+            pinnedAt = now,
+        )
+        val recent = conversation("c_recent", "Dora").copy(lastMessageAt = now)
+        every { conversationRepository.conversations } returns flowOf(listOf(recent, pinned))
+
+        val viewModel = ConversationsViewModel(conversationRepository)
+
+        // The pinned (older) conversation floats above the more-recently-active one.
+        assertEquals(listOf("c_pin", "c_recent"), viewModel.state.value.conversations.map { it.id })
     }
 
     @Test

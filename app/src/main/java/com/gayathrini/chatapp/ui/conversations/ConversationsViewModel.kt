@@ -18,6 +18,8 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 data class ConversationsUiState(
@@ -25,7 +27,16 @@ data class ConversationsUiState(
     val conversations: List<Conversation> = emptyList(),
     val error: String? = null,
     val pendingDelete: Conversation? = null,
+    /** The conversation whose mute-duration picker is open (TDD §6.18); null when closed. */
+    val mutePickerFor: Conversation? = null,
 )
+
+/** Mute durations offered by the picker (TDD §6.18). ALWAYS maps to an open-ended mute. */
+enum class MuteDuration(val label: String) {
+    EIGHT_HOURS("8 hours"),
+    ONE_WEEK("1 week"),
+    ALWAYS("Always"),
+}
 
 sealed interface ConversationsEffect {
     data class OpenConversation(val conversationId: String) : ConversationsEffect
@@ -47,11 +58,23 @@ class ConversationsViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             conversationRepository.conversations.collect { list ->
-                _state.update { it.copy(conversations = list, isLoading = false) }
+                _state.update { it.copy(conversations = sortPinnedFirst(list), isLoading = false) }
             }
         }
         refresh()
     }
+
+    /**
+     * Pinned conversations float to the top (TDD §6.22), most-recently-pinned first; the rest keep
+     * their recency order. The pin is per-participant, so this is the local user's view.
+     */
+    private fun sortPinnedFirst(list: List<Conversation>): List<Conversation> =
+        list.sortedWith(
+            compareByDescending<Conversation> { it.isPinned }
+                .thenByDescending {
+                    (if (it.isPinned) it.pinnedAt else it.lastMessageAt)?.toEpochMilli() ?: 0L
+                },
+        )
 
     fun refresh() {
         _state.update { it.copy(error = null) }
@@ -103,6 +126,40 @@ class ConversationsViewModel @Inject constructor(
         val target = _state.value.pendingDelete ?: return
         _state.update { it.copy(pendingDelete = null) }
         viewModelScope.launch { conversationRepository.deleteConversation(target.id) }
+    }
+
+    // ─── Mute (TDD §6.18) ────────────────────────────────────────────────────
+    fun requestMute(conversation: Conversation) = _state.update { it.copy(mutePickerFor = conversation) }
+
+    fun cancelMute() = _state.update { it.copy(mutePickerFor = null) }
+
+    fun confirmMute(duration: MuteDuration) {
+        val target = _state.value.mutePickerFor ?: return
+        _state.update { it.copy(mutePickerFor = null) }
+        val until = when (duration) {
+            MuteDuration.EIGHT_HOURS -> Instant.now().plus(8, ChronoUnit.HOURS)
+            MuteDuration.ONE_WEEK -> Instant.now().plus(7, ChronoUnit.DAYS)
+            MuteDuration.ALWAYS -> null
+        }
+        viewModelScope.launch { conversationRepository.mute(target.id, until) }
+    }
+
+    fun unmute(conversation: Conversation) {
+        viewModelScope.launch { conversationRepository.unmute(conversation.id) }
+    }
+
+    // ─── Pin (TDD §6.22) ─────────────────────────────────────────────────────
+    fun pin(conversation: Conversation) {
+        viewModelScope.launch { conversationRepository.pin(conversation.id) }
+    }
+
+    fun unpin(conversation: Conversation) {
+        viewModelScope.launch { conversationRepository.unpin(conversation.id) }
+    }
+
+    /** Archive a conversation out of the main list (TDD §6.23). */
+    fun archive(conversation: Conversation) {
+        viewModelScope.launch { conversationRepository.archive(conversation.id) }
     }
 
     private companion object {

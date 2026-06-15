@@ -546,6 +546,18 @@ sequenceDiagram
 
 ## 8. UI / UX Design
 
+> **⚠️ Design revision (2026-06-07) — supersedes the elderly-UX requirements in this section.** The
+> baseline (control) app uses a **conventional WhatsApp-style chat UI**, *not* an elderly-optimized
+> one. **Rationale:** the control must be a *normal* messaging app so the experimental build's Lumen
+> middleware yields a *measurable* elderly-assistance benefit; pre-optimizing the baseline for elderly
+> users would confound/mask that effect. Therefore the elderly-specific guidance in §8.4 (enlarged
+> type, ≥48–56 dp targets), §8.5 (max-font-scale adaptivity), §8.6 (high-contrast-only palette) and
+> §10 is **deferred to the experimental Lumen build**. The control retains ordinary good practice
+> (TalkBack content descriptions, reasonable contrast, Loading/Empty/Error states) but adopts a
+> standard Material 3 type scale, the WhatsApp green palette, chat bubbles with tail shapes and tick
+> receipts, a chat wallpaper, green app bars/badges, and a pill composer. Screen inventory, navigation,
+> data flow, and component responsibilities below remain accurate.
+
 ### 8.1 Screen inventory
 
 Launch/Router · Login · Register · Conversations (chat list) · Contacts (+ contact picker) ·

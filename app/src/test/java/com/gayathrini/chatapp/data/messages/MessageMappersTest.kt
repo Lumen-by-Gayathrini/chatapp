@@ -5,6 +5,7 @@ import com.gayathrini.chatapp.domain.model.MessageDirection
 import com.gayathrini.chatapp.domain.model.MessageType
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import java.time.Instant
 
 class MessageMappersTest {
 
@@ -25,6 +26,25 @@ class MessageMappersTest {
         assertEquals("c1", entity.clientId)
         assertEquals("u_me", entity.senderId)
         assertEquals("Hi", entity.text)
+    }
+
+    @Test
+    fun dtoToEntity_parsesUpdatedAt_orFallsBackToSentAt() {
+        val withUpdated = MessageDto(
+            id = "m1", clientId = "c1", conversationId = "conv", senderId = "u_me",
+            type = "TEXT", text = "Hi", mediaUrl = null, status = "DELIVERED",
+            sentAt = "2026-06-05T09:00:00Z", updatedAt = "2026-06-05T09:05:00Z",
+        ).toEntity()
+        assertEquals(Instant.parse("2026-06-05T09:05:00Z").toEpochMilli(), withUpdated.updatedAt)
+        assertEquals("DELIVERED", withUpdated.status)
+
+        // When the server omits updatedAt (FakeChatApi seeds), fall back to sentAt.
+        val withoutUpdated = MessageDto(
+            id = "m2", clientId = "c2", conversationId = "conv", senderId = "u_me",
+            type = "TEXT", text = "Hi", mediaUrl = null, status = "SENT",
+            sentAt = "2026-06-05T09:00:00Z",
+        ).toEntity()
+        assertEquals(Instant.parse("2026-06-05T09:00:00Z").toEpochMilli(), withoutUpdated.updatedAt)
     }
 
     @Test

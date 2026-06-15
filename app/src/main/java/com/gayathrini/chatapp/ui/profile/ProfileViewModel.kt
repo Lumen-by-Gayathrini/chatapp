@@ -24,7 +24,9 @@ data class ProfileUiState(
     val isLoading: Boolean = true,
     val username: String = "",
     val displayName: String = "",
+    val about: String = "",
     val avatarUrl: String? = null,
+    val showLastSeen: Boolean = true,
     val isSaving: Boolean = false,
     val isUploadingAvatar: Boolean = false,
     val savedConfirmation: Boolean = false,
@@ -63,21 +65,38 @@ class ProfileViewModel @Inject constructor(
     fun onDisplayNameChange(value: String) =
         _state.update { it.copy(displayName = value, savedConfirmation = false) }
 
+    fun onAboutChange(value: String) =
+        _state.update { it.copy(about = value, savedConfirmation = false) }
+
     fun save() {
         val name = _state.value.displayName.trim()
+        val about = _state.value.about.trim()
         if (name.isEmpty()) {
             _state.update { it.copy(error = "Please enter your name.") }
             return
         }
         _state.update { it.copy(isSaving = true, error = null, savedConfirmation = false) }
         viewModelScope.launch {
-            when (val result = profileRepository.updateDisplayName(name)) {
+            when (val result = profileRepository.updateProfile(name, about)) {
                 is AppResult.Success -> {
                     applyUser(result.data)
                     _state.update { it.copy(isSaving = false, savedConfirmation = true) }
                 }
                 is AppResult.Failure -> _state.update {
                     it.copy(isSaving = false, error = result.error.toUserMessage())
+                }
+            }
+        }
+    }
+
+    /** Toggle "last seen & online" privacy (TDD §6.5). Optimistic; reverts the switch on failure. */
+    fun onToggleLastSeen(enabled: Boolean) {
+        _state.update { it.copy(showLastSeen = enabled, error = null) }
+        viewModelScope.launch {
+            when (val result = profileRepository.setShowLastSeen(enabled)) {
+                is AppResult.Success -> applyUser(result.data)
+                is AppResult.Failure -> _state.update {
+                    it.copy(showLastSeen = !enabled, error = result.error.toUserMessage())
                 }
             }
         }
@@ -123,7 +142,9 @@ class ProfileViewModel @Inject constructor(
                 isLoading = false,
                 username = user.username,
                 displayName = user.displayName,
+                about = user.about.orEmpty(),
                 avatarUrl = user.avatarUrl,
+                showLastSeen = user.showLastSeen,
             )
         }
     }

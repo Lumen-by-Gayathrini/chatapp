@@ -32,7 +32,7 @@ class FakeChatApiTest {
     fun getConversations_returnsSeededConversation() = runTest {
         val conversations = api.getConversations()
         assertEquals(1, conversations.size)
-        assertEquals("John", conversations.first().peer.displayName)
+        assertEquals("John", conversations.first().peer?.displayName)
     }
 
     @Test
